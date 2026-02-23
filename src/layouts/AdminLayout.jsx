@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, MapPin, Truck, BarChart3, Bell, Bot, LogOut, Droplets, Menu, X } from 'lucide-react';
+import { LayoutDashboard, MapPin, Truck, BarChart3, Bell, Bot, LogOut, Droplets, Menu, X, FileText } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
     { to: '/admin/analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
     { to: '/admin/alerts', icon: <Bell size={20} />, label: 'Alerts' },
     { to: '/admin/ai-chat', icon: <Bot size={20} />, label: 'AI Analyst' },
+    { to: '/admin/scarcity-plan', icon: <FileText size={20} />, label: 'Scarcity Plan' },
 ];
 
 export default function AdminLayout() {

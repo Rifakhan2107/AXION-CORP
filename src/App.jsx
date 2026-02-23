@@ -10,6 +10,7 @@ import TankersPage from './pages/admin/TankersPage'
 import AnalyticsPage from './pages/admin/AnalyticsPage'
 import AlertsPage from './pages/admin/AlertsPage'
 import AIChatPage from './pages/admin/AIChatPage'
+import ScarcityPlanPage from './pages/admin/ScarcityPlanPage'
 import OperatorDashboard from './pages/operator/OperatorDashboard'
 import OperatorTrips from './pages/operator/OperatorTrips'
 
@@ -37,6 +38,7 @@ function App() {
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="alerts" element={<AlertsPage />} />
                 <Route path="ai-chat" element={<AIChatPage />} />
+                <Route path="scarcity-plan" element={<ScarcityPlanPage />} />
             </Route>
             <Route path="/operator" element={
                 <ProtectedRoute requiredRole="operator">
