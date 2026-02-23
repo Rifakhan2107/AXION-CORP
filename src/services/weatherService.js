@@ -30,7 +30,7 @@ const fallbackWeather = {
 };
 
 export async function getWeatherForDistrict(district) {
-    if (!API_KEY || API_KEY === 'your_openweather_api_key') {
+    if (!API_KEY) {
         return fallbackWeather[district] || fallbackWeather.Nagpur;
     }
     try {

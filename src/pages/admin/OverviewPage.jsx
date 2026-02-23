@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Truck, AlertTriangle, Droplets, TrendingDown, Users } from 'lucide-react';
+import { MapPin, Truck, AlertTriangle, Droplets, Cloud, Thermometer } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { villages, rainfallHistory, groundwaterTrend, getRiskLevel, getRiskLabel, getDistrictStats } from '../../data/vidarbhaData';
 import { generateBriefing } from '../../services/geminiService';
+import { getAllDistrictWeather } from '../../services/weatherService';
 
 const COLORS = { low: '#34d399', moderate: '#fbbf24', high: '#fb923c', critical: '#f87171' };
 
 export default function OverviewPage() {
     const [briefing, setBriefing] = useState('Loading AI briefing...');
+    const [weather, setWeather] = useState(null);
     const stats = getDistrictStats();
     const totalPop = villages.reduce((s, v) => s + v.population, 0);
     const criticalCount = villages.filter(v => v.wsi > 80).length;
@@ -25,6 +27,7 @@ export default function OverviewPage() {
 
     useEffect(() => {
         generateBriefing().then(setBriefing).catch(() => setBriefing('AI briefing unavailable.'));
+        getAllDistrictWeather().then(setWeather).catch(() => { });
     }, []);
 
     return (
@@ -32,7 +35,7 @@ export default function OverviewPage() {
             <div className="page-header">
                 <div>
                     <h1>Dashboard Overview</h1>
-                    <p className="subtitle">Vidarbha Region — February 2026</p>
+                    <p className="subtitle">Vidarbha Region — {new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', animation: 'pulse 2s infinite' }} />
@@ -45,13 +48,13 @@ export default function OverviewPage() {
                     <div className="kpi-icon"><MapPin size={24} /></div>
                     <div className="kpi-value">{villages.length}</div>
                     <div className="kpi-label">Villages Monitored</div>
-                    <div className="kpi-change up">↑ Across 11 districts</div>
+                    <div className="kpi-change up">Across 11 districts</div>
                 </div>
                 <div className="kpi-card orange">
                     <div className="kpi-icon"><AlertTriangle size={24} /></div>
                     <div className="kpi-value">{criticalCount}</div>
                     <div className="kpi-label">Critical Villages</div>
-                    <div className="kpi-change down">↑ WSI {'>'} 80</div>
+                    <div className="kpi-change down">WSI {'>'} 80</div>
                 </div>
                 <div className="kpi-card green">
                     <div className="kpi-icon"><Truck size={24} /></div>
@@ -63,9 +66,28 @@ export default function OverviewPage() {
                     <div className="kpi-icon"><Droplets size={24} /></div>
                     <div className="kpi-value">{avgWSI}</div>
                     <div className="kpi-label">Avg Water Stress Index</div>
-                    <div className="kpi-change down">↑ Regional average</div>
+                    <div className="kpi-change down">Regional average</div>
                 </div>
             </div>
+
+            {/* Live Weather Strip */}
+            {weather && (
+                <div className="glass-card" style={{ padding: '12px 20px', marginBottom: 24, overflow: 'auto' }}>
+                    <div style={{ display: 'flex', gap: 16, minWidth: 'fit-content' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--accent-blue)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                            <Cloud size={14} /> LIVE WEATHER
+                        </div>
+                        {Object.entries(weather).map(([district, w]) => (
+                            <div key={district} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', whiteSpace: 'nowrap', padding: '4px 10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)' }}>
+                                <img src={`https://openweathermap.org/img/wn/${w.icon}.png`} width={24} height={24} alt="" />
+                                <span style={{ fontWeight: 600 }}>{district}</span>
+                                <span style={{ color: w.temp > 36 ? 'var(--accent-red)' : 'var(--text-secondary)' }}>{w.temp}°C</span>
+                                <span style={{ color: 'var(--text-muted)' }}>{w.humidity}%</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="grid-2" style={{ marginBottom: 24 }}>
                 <div className="chart-container" style={{ height: 440 }}>
@@ -83,7 +105,7 @@ export default function OverviewPage() {
                                                 {v.district} · {v.taluka}<br />
                                                 WSI: <strong>{v.wsi}</strong> ({getRiskLabel(v.wsi)})<br />
                                                 Population: {v.population.toLocaleString()}<br />
-                                                Groundwater: {v.groundwaterLevel}m (trend: {v.groundwaterTrend}m/yr)<br />
+                                                Groundwater: {v.groundwaterLevel}m ({v.groundwaterTrend}m/yr)<br />
                                                 Rainfall: {v.currentRainfall}/{v.avgRainfall}mm<br />
                                                 Tankers: {v.tankerCount > 0 ? `${v.tankerCount} active` : 'None'}
                                             </span>
